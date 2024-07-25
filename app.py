@@ -1,7 +1,8 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from repository.database import db
 from models.payment import Payment
 from datetime import datetime, timedelta
+from payments.pix import Pix
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
@@ -20,6 +21,11 @@ def create_payment_pix():
     
     new_payment = Payment(value=data.get('value'), expiration_date=expiration_date)
     
+    pix = Pix()
+    data_payment_pix = pix.create_payment()
+    new_payment.bank_payment_id = data_payment_pix["bank_payment_id"]
+    new_payment.qr_code = data_payment_pix["qr_code_path"]
+    
     db.session.add(new_payment)
     db.session.commit()
     
@@ -27,9 +33,13 @@ def create_payment_pix():
         "message": "The payment has been created.",
         "payment": new_payment.to_dict()
     })
+    
+@app.route("/paymens/pix/qr_code/<filename>", methods=["GET"])
+def get_image(filename):
+    return send_file(f"statics/img/{filename}.png", mimetype="image/png")
 
 @app.route("/payments/pix/confirmation", methods=["POST"])
-def create_payment():
+def pix_confirmation():
     return jsonify({"message": "The payment has been confirmed."})
 
 @app.route("/payments/pix/<int:payment_id>", methods=["GET"])
