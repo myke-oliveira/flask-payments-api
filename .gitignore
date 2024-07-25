@@ -162,4 +162,4 @@ cython_debug/
 #.idea/
 
 # static images directory
-statics/img/*.png
+static/img/*.png
