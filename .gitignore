@@ -162,4 +162,4 @@ cython_debug/
 #.idea/
 
 # static images directory
-static/img/*.png
+static/img/qr_code_payment_*.png
